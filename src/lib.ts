@@ -1,22 +1,23 @@
-import * as ts from "typescript";
+import * as ts from 'typescript';
 import faker from 'faker';
+import path from 'path'
+import { readFileSync } from 'fs';
 
 import { Options, Output } from './type';
-import { statSync } from "fs";
+import { getSourceFileOfNode } from './util';
+
+const importedInterfaces = new Map();
+const allReferencedFiles = new Map();
 
 export function processFile(sourceFile: ts.SourceFile, options: Options, output: Output, traverseProperty?: string) {
   const processNode = (node: ts.Node) => {
     switch(node.kind) {
       
       case ts.SyntaxKind.InterfaceDeclaration:
-
         const p = (node as ts.InterfaceDeclaration).name.text;
-
-
         if (!isSpecificInterface(p, options) && !traverseProperty) {
           return;
         }
-
         if (traverseProperty) {
           if (p === traverseProperty) {
             traverseInterface(node, sourceFile, options, output, traverseProperty)
@@ -27,7 +28,11 @@ export function processFile(sourceFile: ts.SourceFile, options: Options, output:
         break;
 
       case ts.SyntaxKind.SourceFile:
-        traverseInterface(node, sourceFile, options, output)
+        // traverseInterface(node, sourceFile, options, output)
+        break;
+
+      case ts.SyntaxKind.ImportDeclaration:
+        processImportDeclaration(node as ts.ImportDeclaration, output);
         break;
 
       default:
@@ -50,7 +55,6 @@ function traverseInterface(node: ts.Node, sourceFile: ts.SourceFile, options: Op
 function traverseInterfaceMembers(node: ts.Node, sourceFile: ts.SourceFile, options: Options, output: Output) {
 
   if (node.kind !== ts.SyntaxKind.PropertySignature) {
-    console.log(333333333)
     return;
   }
 
@@ -64,7 +68,6 @@ function traverseInterfaceMembers(node: ts.Node, sourceFile: ts.SourceFile, opti
     if (node.type) {
       kind = node.type.kind
       typeName = node.type.getText();
-      console.log(typeName, 'typenamessssssss');
     }
 
     switch (kind) {
@@ -94,9 +97,6 @@ function processTypeLiteral(node: ts.PropertySignature, property: string, source
   );
 }
 
-
-
-
 function processGenericPropertyType(node: ts.Node, options: Options, property: string, kind: ts.SyntaxKind, output: Output) {
 
   const value = generatePrimitive(property, kind)
@@ -120,6 +120,17 @@ function processPropertyTypeReference(node: ts.PropertySignature, property: stri
 
 
   output[property] = {};
+
+  if (importedInterfaces.get(typeName)) {
+    const options: Options = {
+      file: importedInterfaces.get(typeName),
+      interfaces: typeName.split(' ')
+    }
+
+    processFile(allReferencedFiles.get(importedInterfaces.get(typeName)), options, output[property], typeName)
+  }
+
+
   processFile(sourceFile, options, output[property], typeName);
 }
 
@@ -165,8 +176,6 @@ function generatePrimitive(property: string, kind: ts.SyntaxKind): string | numb
 
   let result;
 
-  console.log(kind)
-  console.log('666')
 
   switch(kind) {
     case ts.SyntaxKind.StringKeyword:
@@ -190,3 +199,29 @@ function isSpecificInterface(name: string, options: Options): boolean {
   return true;
 }
 
+function processImportDeclaration(node: ts.ImportDeclaration, output: Output) {
+
+  const originalFile = getSourceFileOfNode(node);
+  const moduleReference = ts.isStringLiteral(node.moduleSpecifier) ? node.moduleSpecifier.text : '';
+  const filePath = path.resolve(originalFile.fileName.substring(0, originalFile.fileName.lastIndexOf('/')), moduleReference + '.ts');
+
+
+  const namedBindings = node.importClause?.namedBindings;
+  if (namedBindings && namedBindings.kind === ts.SyntaxKind.NamedImports) {
+    for (const element of namedBindings.elements) {
+      const name = element.name.escapedText
+      importedInterfaces.set(name, filePath);
+    }
+  }
+
+  if (!allReferencedFiles.get(filePath)) {
+    const sourceFile = ts.createSourceFile(
+      filePath,
+      readFileSync(filePath).toString(),
+      ts.ScriptTarget.ES2015,
+      true
+    );
+
+    allReferencedFiles.set(filePath, sourceFile)
+  }
+}

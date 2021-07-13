@@ -21,9 +21,6 @@ const optionDefinitions = [
   {name: 'outputFormat', alias: 'o', type: String},
 ];
 
-
-// ---------- begin --------------
-
 function main() {
   const options: Options = commandLineArgs(optionDefinitions) as Options
   console.log(options)
@@ -34,10 +31,7 @@ function main() {
     true
   );
 
-  // console.log(sourceFile)
-
   processFile(sourceFile, options, output)
-
 
   console.log(output)
 }
