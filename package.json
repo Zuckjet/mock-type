@@ -1,6 +1,6 @@
 {
-  "name": "mock-ts",
-  "version": "0.1.1",
+  "name": "mock-interface",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
