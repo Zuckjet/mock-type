@@ -23,7 +23,6 @@ const optionDefinitions = [
 
 function main() {
   const options: Options = commandLineArgs(optionDefinitions) as Options
-  console.log(options)
   const sourceFile = ts.createSourceFile(
     options.file,
     readFileSync(options.file).toString(),

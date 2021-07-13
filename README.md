@@ -1,7 +1,30 @@
-### ts-mock
+### mock-type
 
 a tool to create mock data from typescript interfaces, inspired by [intermock](https://github.com/google/intermock)
 
+
+## Installation
+
+```
+npm install --global mock-type
+```
+
+## Usage
+
+Suppose we have a file named `model.ts` under current directory, which content is like:
+```
+interface User {
+  name: string
+}
+```
+
+we can mock data by this:
+```
+mock-type -f ./model.ts --interfaces "User"
+```
+
+
+## Why
 Since intermock is not active, and don't support some important features like:
 
 1. don't support nested type literal
@@ -27,19 +50,3 @@ interface Admin {
 }
 ```
 
-
-### Usage
-
-```
-npm run build
-
-cd lib
-
-node index.js -f ../model.ts --interfaces "Admin" 
-```
-
-
-### TODO
-* publish to npm as a cli tool
-* support multiple files
-* automatically scan directory, then write all mock data in files
