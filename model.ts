@@ -1,7 +1,5 @@
-interface Admin {
-  role: Array<User>
-}
+import { User } from './user'
 
-interface User {
-  name: string
+interface Admin {
+  role: User
 }

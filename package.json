@@ -1,6 +1,6 @@
 {
-  "name": "mock-ts",
-  "version": "1.0.0",
+  "name": "mock-type",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,10 @@
     "build": "tsc -p .",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec \"ts-node\" src/index.ts"
   },
-  "keywords": [],
+  "keywords": [
+    "mock-type",
+    "mock"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -23,5 +26,13 @@
     "fake": "^0.2.2",
     "faker": "^5.5.3",
     "typescript": "^4.3.2"
-  }
+  },
+  "bin": {
+    "mock-type": "./bin/mock-type"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Zuckjet/mock-type.git"
+  },
+  "homepage": "https://github.com/Zuckjet/mock-type#readme"
 }
