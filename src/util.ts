@@ -6,3 +6,4 @@ export function getSourceFileOfNode(node: ts.Node): ts.SourceFile {
   }
   return <ts.SourceFile>node;
 }
+

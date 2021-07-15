@@ -182,10 +182,13 @@ function generatePrimitive(property: string, kind: ts.SyntaxKind): string | numb
       result = faker.fake('{{lorem.text}}');
       break;
     case ts.SyntaxKind.NumberKeyword:
-      result = parseInt(faker.fake('{{datatype.number}}'), 10)
+      result = parseInt(faker.fake('{{datatype.number}}'), 10);
+      break;
+    case ts.SyntaxKind.BooleanKeyword:
+      result = JSON.parse(faker.fake('{{random.boolean}}'));
       break;
     default:
-      result = ''
+      result = '';
   }
 
   return result;

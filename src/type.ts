@@ -5,6 +5,7 @@ export interface Options {
   help?: boolean;
   language?: string;
   interfaces: string[];
+  outFile?: string,
   fixed?: boolean;
   outputFormat?: OutputType;
 }
