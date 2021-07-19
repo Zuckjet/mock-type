@@ -179,7 +179,7 @@ function generatePrimitive(property: string, kind: ts.SyntaxKind): string | numb
 
   switch(kind) {
     case ts.SyntaxKind.StringKeyword:
-      result = faker.fake('{{lorem.text}}');
+      result = faker.fake('{{lorem.text}}').substring(0, 50);
       break;
     case ts.SyntaxKind.NumberKeyword:
       result = parseInt(faker.fake('{{datatype.number}}'), 10);
