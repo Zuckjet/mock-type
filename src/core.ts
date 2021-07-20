@@ -4,10 +4,17 @@ import path from 'path'
 import { readFileSync } from 'fs';
 
 import { Options, Output } from './type';
-import { getSourceFileOfNode, generateAnyType } from './util';
+import { getSourceFileOfNode, generateAnyType, generateObject } from './util';
 
 const importedInterfaces = new Map();
 const allReferencedFiles = new Map();
+const supportedPrimitiveTypes: {[key: string]: boolean} = {
+  [ts.SyntaxKind.NumberKeyword]: true,
+  [ts.SyntaxKind.StringKeyword]: true,
+  [ts.SyntaxKind.BooleanKeyword]: true,
+  [ts.SyntaxKind.ObjectKeyword]: true,
+  [ts.SyntaxKind.AnyKeyword]: true,
+};
 
 export function processFile(sourceFile: ts.SourceFile, options: Options, output: Output, traverseProperty?: string) {
   const processNode = (node: ts.Node) => {
@@ -77,12 +84,27 @@ function traverseInterfaceMembers(node: ts.Node, sourceFile: ts.SourceFile, opti
       case ts.SyntaxKind.TypeLiteral:
         processTypeLiteral(node, property, sourceFile, output, options);
         break;
+      case ts.SyntaxKind.UnionType:
+        processUnionType(node, property, sourceFile, output, options);
+        break;
       default:
         processGenericPropertyType(node, options, property, kind as ts.SyntaxKind, output);
     }
   }
 
   processPropertySignature(node as ts.PropertySignature);
+
+}
+
+function processUnionType(node: ts.PropertySignature, property: string, sourceFile: ts.SourceFile, output: Output, options: Options) {
+  const unionNodes = node && node.type ? (node.type as ts.UnionTypeNode).types as ts.NodeArray<ts.TypeNode>: [];
+  const selectedType = faker.random.arrayElement(unionNodes);
+  if (supportedPrimitiveTypes[selectedType.kind]) {
+    output[property] = generatePrimitive(property, selectedType.kind);
+  } else {
+    const typeName = selectedType.getText();
+    processPropertyTypeReference(node, property, sourceFile, output, options, typeName, selectedType.kind as ts.SyntaxKind);
+  }
 
 }
 
@@ -186,6 +208,9 @@ function generatePrimitive(property: string, kind: ts.SyntaxKind): string | numb
       break;
     case ts.SyntaxKind.BooleanKeyword:
       result = JSON.parse(faker.fake('{{datatype.boolean}}'));
+      break;
+    case ts.SyntaxKind.ObjectKeyword:
+      result = generateObject();
       break;
     case ts.SyntaxKind.AnyKeyword:
       result = generateAnyType();

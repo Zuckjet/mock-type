@@ -49,12 +49,16 @@ export function writeToFile(options: Options, output: Output | Output[]) {
 }
 
 export function generateAnyType() {
+  const values = [...generateBasicValues(), generateObject()];
+  return faker.random.arrayElement(values);
+}
+
+export function generateObject(): object {
   const objectKey = faker.random.word();
-  const objectItem = {
+  const object = {
     [objectKey]: faker.random.arrayElement(generateBasicValues()),
   };
-  const values = [...generateBasicValues(), objectItem];
-  return faker.random.arrayElement(values);
+  return object;
 }
 
 function generateBasicValues(): Array<number | boolean | string> {
