@@ -4,7 +4,7 @@ import path from 'path'
 import { readFileSync } from 'fs';
 
 import { Options, Output } from './type';
-import { getSourceFileOfNode } from './util';
+import { getSourceFileOfNode, generateAnyType } from './util';
 
 const importedInterfaces = new Map();
 const allReferencedFiles = new Map();
@@ -185,7 +185,10 @@ function generatePrimitive(property: string, kind: ts.SyntaxKind): string | numb
       result = parseInt(faker.fake('{{datatype.number}}'), 10);
       break;
     case ts.SyntaxKind.BooleanKeyword:
-      result = JSON.parse(faker.fake('{{random.boolean}}'));
+      result = JSON.parse(faker.fake('{{datatype.boolean}}'));
+      break;
+    case ts.SyntaxKind.AnyKeyword:
+      result = generateAnyType();
       break;
     default:
       result = '';

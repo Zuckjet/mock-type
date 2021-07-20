@@ -1,9 +1,10 @@
 import * as ts from 'typescript';
 import commandLineUsage from 'command-line-usage';
 import { writeFile } from 'fs';
+import faker from 'faker';
 
 import { Options, Output } from './type';
-import { instructions} from './option';
+import { instructions } from './option';
 
 export function isWelcomeMessageNeeded(options: Options) {
   if (!options || !options.file || options.help) {
@@ -16,7 +17,6 @@ export function showWelcomeMessage() {
   const usage = commandLineUsage(instructions);
   console.log(usage);
 }
-
 
 export function getSourceFileOfNode(node: ts.Node): ts.SourceFile {
   while (node && node.kind !== ts.SyntaxKind.SourceFile) {
@@ -48,7 +48,18 @@ export function writeToFile(options: Options, output: Output | Output[]) {
   );
 }
 
+export function generateAnyType() {
+  const objectKey = faker.random.word();
+  const objectItem = {
+    [objectKey]: faker.random.arrayElement(generateBasicValues()),
+  };
+  const values = [...generateBasicValues(), objectItem];
+  return faker.random.arrayElement(values);
+}
 
-
-
-
+function generateBasicValues(): Array<number | boolean | string> {
+  const booleanItem = JSON.parse(faker.fake("{{datatype.boolean}}"));
+  const numberItem = parseInt(faker.fake("{{datatype.number}}"), 10);
+  const stringItem = faker.fake("{{lorem.text}}").substring(0, 50);
+  return [booleanItem, numberItem, stringItem];
+}
