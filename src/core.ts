@@ -61,38 +61,46 @@ function traverseInterface(node: ts.Node, sourceFile: ts.SourceFile, options: Op
 
 function traverseInterfaceMembers(node: ts.Node, sourceFile: ts.SourceFile, options: Options, output: Output) {
 
-  if (node.kind !== ts.SyntaxKind.PropertySignature) {
-    return;
-  }
 
-  const processPropertySignature = (node: ts.PropertySignature) => {
+  const processPropertySignature = (node: ts.PropertySignature | ts.IndexSignatureDeclaration) => {
     let kind;
     let typeName = '';
+    let property = '';
 
-    const property = node.name.getText();
-
+    if (node.kind === ts.SyntaxKind.PropertySignature) {
+      property = node.name.getText();
+    } else {
+      const propertyType = node.parameters[0].getText().split(':')[1].trim();
+      property = propertyType === 'string' ? faker.random.word() : faker.fake("{{datatype.number}}");
+    }
 
     if (node.type) {
-      kind = node.type.kind
+      kind = node.type.kind;
       typeName = node.type.getText();
     }
 
     switch (kind) {
       case ts.SyntaxKind.TypeReference:
-        processPropertyTypeReference(node, property, sourceFile, output, options, typeName, kind as ts.SyntaxKind);
+        processPropertyTypeReference(node as ts.PropertySignature, property, sourceFile, output, options, typeName, kind as ts.SyntaxKind);
         break;
       case ts.SyntaxKind.TypeLiteral:
-        processTypeLiteral(node, property, sourceFile, output, options);
+        processTypeLiteral(node as ts.PropertySignature, property, sourceFile, output, options);
         break;
       case ts.SyntaxKind.UnionType:
-        processUnionType(node, property, sourceFile, output, options);
+        processUnionType(node as ts.PropertySignature, property, sourceFile, output, options);
         break;
       default:
         processGenericPropertyType(node, options, property, kind as ts.SyntaxKind, output);
     }
   }
 
-  processPropertySignature(node as ts.PropertySignature);
+  if (node.kind === ts.SyntaxKind.PropertySignature) {
+    processPropertySignature(node as ts.PropertySignature);
+  } else if (node.kind === ts.SyntaxKind.IndexSignature) {
+    processPropertySignature(node as ts.IndexSignatureDeclaration);
+  } else {
+    // don't support this type at right now
+  }
 
 }
 
@@ -253,6 +261,6 @@ function processImportDeclaration(node: ts.ImportDeclaration, output: Output) {
       true
     );
 
-    allReferencedFiles.set(filePath, sourceFile)
+    allReferencedFiles.set(filePath, sourceFile);
   }
 }
