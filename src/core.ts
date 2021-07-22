@@ -4,7 +4,7 @@ import path from 'path'
 import { readFileSync } from 'fs';
 
 import { Options, Output } from './type';
-import { getSourceFileOfNode, generateAnyType, generateObject } from './util';
+import { getSourceFileOfNode, generateAnyType, generateObject, getLiteralTypeValue } from './util';
 
 const importedInterfaces = new Map();
 const allReferencedFiles = new Map();
@@ -41,6 +41,10 @@ export function processFile(sourceFile: ts.SourceFile, options: Options, output:
       case ts.SyntaxKind.ImportDeclaration:
         processImportDeclaration(node as ts.ImportDeclaration, output);
         break;
+
+      case ts.SyntaxKind.TypeAliasDeclaration:
+        const type = (node as ts.TypeAliasDeclaration).type;
+        traverseInterface(type, sourceFile, options, output);
 
       default:
         break;
@@ -113,9 +117,13 @@ function processUnionType(node: ts.PropertySignature, property: string, sourceFi
   const selectedType = faker.random.arrayElement(unionNodes);
   if (supportedPrimitiveTypes[selectedType.kind]) {
     output[property] = generatePrimitive(property, selectedType.kind);
-  } else {
+  } else if (selectedType.kind === ts.SyntaxKind.TypeReference) {
     const typeName = selectedType.getText();
     processPropertyTypeReference(node, property, sourceFile, output, options, typeName, selectedType.kind as ts.SyntaxKind);
+  } else if (selectedType.kind === ts.SyntaxKind.LiteralType) {
+    output[property] = getLiteralTypeValue(selectedType as ts.LiteralTypeNode);
+  } else {
+    // ...
   }
 
 }

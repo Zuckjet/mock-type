@@ -61,6 +61,23 @@ export function generateObject(): object {
   return object;
 }
 
+export function getLiteralTypeValue(node: ts.LiteralTypeNode) {
+  const {literal} = node;
+  // Boolean Literal
+  if (literal.kind === ts.SyntaxKind.TrueKeyword) {
+    return true;
+  } else if (literal.kind === ts.SyntaxKind.FalseKeyword) {
+    return false;
+    // String Literal
+  } else if (literal.kind === ts.SyntaxKind.StringLiteral) {
+    return literal.text ? literal.text : '';
+    // Numeric Literal
+  } else {
+    // The text IS a string, but the output value has to be a numeric value
+    return Number((literal as ts.NumericLiteral).text);
+  }
+}
+
 function generateBasicValues(): Array<number | boolean | string> {
   const booleanItem = JSON.parse(faker.fake("{{datatype.boolean}}"));
   const numberItem = parseInt(faker.fake("{{datatype.number}}"), 10);
