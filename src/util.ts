@@ -26,7 +26,7 @@ export function getSourceFileOfNode(node: ts.Node): ts.SourceFile {
 }
 
 export function format(text: string): string {
-  return text.replace(/"([^"]+)":/g, "$1:").replace(/"/g, `'`);
+  return text.replace(/"([^"]+)":/g, '$1:').replace(/"/g, `'`);
 }
 
 export function writeToFile(options: Options, output: Output | Output[]) {
@@ -62,7 +62,7 @@ export function generateObject(): object {
 }
 
 export function getLiteralTypeValue(node: ts.LiteralTypeNode) {
-  const {literal} = node;
+  const { literal } = node;
   // Boolean Literal
   if (literal.kind === ts.SyntaxKind.TrueKeyword) {
     return true;
@@ -79,8 +79,8 @@ export function getLiteralTypeValue(node: ts.LiteralTypeNode) {
 }
 
 function generateBasicValues(): Array<number | boolean | string> {
-  const booleanItem = JSON.parse(faker.fake("{{datatype.boolean}}"));
-  const numberItem = parseInt(faker.fake("{{datatype.number}}"), 10);
-  const stringItem = faker.fake("{{lorem.text}}").substring(0, 50);
+  const booleanItem = JSON.parse(faker.fake('{{datatype.boolean}}'));
+  const numberItem = parseInt(faker.fake('{{datatype.number}}'), 10);
+  const stringItem = faker.fake('{{lorem.text}}').substring(0, 50);
   return [booleanItem, numberItem, stringItem];
 }

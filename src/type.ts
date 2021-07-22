@@ -10,6 +10,6 @@ export interface Options {
   repeat?: number;
 }
 
-export type Output =  {
-  [index: string]: {}
-}
+export type Output = {
+  [index: string]: {};
+};

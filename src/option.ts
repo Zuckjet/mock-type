@@ -6,7 +6,7 @@ export const optionDefinitions = [
   { name: 'outFile', alias: 'o', type: String },
   { name: 'format', alias: 'm', type: Boolean },
   { name: 'silence', alias: 's', type: Boolean },
-  { name: 'repeat', alias: 'r', type: Number }
+  { name: 'repeat', alias: 'r', type: Number },
 ];
 
 export const instructions = [
@@ -47,12 +47,12 @@ export const instructions = [
       },
       {
         name: 'silence',
-        description: `Don't print mock data to terminal`
+        description: `Don't print mock data to terminal`,
       },
       {
         name: 'repeat',
-        description: 'Repeat result as array'
-      }
+        description: 'Repeat result as array',
+      },
     ],
   },
 ];

@@ -6,12 +6,14 @@ import { processFile } from './core';
 import { optionDefinitions } from './option';
 
 import { Options, Output } from './type';
-import { isWelcomeMessageNeeded, showWelcomeMessage, writeToFile } from './util';
-
+import {
+  isWelcomeMessageNeeded,
+  showWelcomeMessage,
+  writeToFile,
+} from './util';
 
 let output: Output = {};
 const outputs: Output[] = [];
-
 
 function main() {
   const options: Options = commandLineArgs(optionDefinitions) as Options;
@@ -37,7 +39,6 @@ function main() {
   } else {
     processFile(sourceFile, options, output);
   }
-
 
   if (!options.silence) {
     if (options.repeat) {
