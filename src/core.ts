@@ -89,6 +89,10 @@ function traverseInterfaceMembers(node: ts.Node, sourceFile: ts.SourceFile, opti
       case ts.SyntaxKind.UnionType:
         processUnionType(node as ts.PropertySignature, property, sourceFile, output, options);
         break;
+      case ts.SyntaxKind.ArrayType:
+        typeName = typeName.replace('[', '').replace(']', '');
+        processArrayPropertyType(node as ts.PropertySignature, sourceFile, output, property, typeName, kind, options);
+        break;
       default:
         processGenericPropertyType(node, options, property, kind as ts.SyntaxKind, output);
     }
@@ -129,14 +133,14 @@ function processTypeLiteral(node: ts.PropertySignature, property: string, source
 
 function processGenericPropertyType(node: ts.Node, options: Options, property: string, kind: ts.SyntaxKind, output: Output) {
 
-  const value = generatePrimitive(property, kind)
-  output[property] = value
+  const value = generatePrimitive(property, kind);
+  output[property] = value;
 }
 
 function processPropertyTypeReference(node: ts.PropertySignature, property: string, sourceFile: ts.SourceFile, output: Output, options: Options, typeName: string, kind: ts.SyntaxKind) {
 
   let isArray = false;
-  let normalizedTypeName: string = '';
+  let normalizedTypeName = '';
 
   if (typeName.startsWith('Array<')) {
     isArray = true;
@@ -155,9 +159,9 @@ function processPropertyTypeReference(node: ts.PropertySignature, property: stri
     const options: Options = {
       file: importedInterfaces.get(typeName),
       interfaces: typeName.split(' ')
-    }
+    };
 
-    processFile(allReferencedFiles.get(importedInterfaces.get(typeName)), options, output[property], typeName)
+    processFile(allReferencedFiles.get(importedInterfaces.get(typeName)), options, output[property], typeName);
   }
 
 
@@ -165,7 +169,7 @@ function processPropertyTypeReference(node: ts.PropertySignature, property: stri
 }
 
 function processArrayPropertyType(node: ts.PropertySignature, sourceFile: ts.SourceFile, output: Output, property: string, typeName: string, kind: ts.SyntaxKind, options: Options) {
-  output[property] = resolveArrayType(sourceFile, node, property, typeName, kind, options)
+  output[property] = resolveArrayType(sourceFile, node, property, typeName, kind, options);
 }
 
 
@@ -177,7 +181,11 @@ function resolveArrayType(sourceFile: ts.SourceFile, node: ts.PropertySignature 
   if (ts.isTypeNode(node)) {
     kind = node.kind;
   } else if ((node.type as ts.TypeReferenceNode).typeArguments) {
-    kind =(node.type as ts.TypeReferenceNode).typeArguments![0].kind
+    kind =(node.type as ts.TypeReferenceNode).typeArguments![0].kind;
+  } else if ((node.type as ts.ArrayTypeNode).elementType) {
+    kind = (node.type as ts.ArrayTypeNode).elementType.kind;
+  } else {
+    // ...
   }
 
 
@@ -190,7 +198,7 @@ function resolveArrayType(sourceFile: ts.SourceFile, node: ts.PropertySignature 
 
   for (let index = 0; index < round; index++) {
     if (isPrimitiveType) {
-      result.push(generatePrimitive(property, kind))
+      result.push(generatePrimitive(property, kind));
     } else {
       const temp = {};
       processFile(sourceFile, options, temp, typeName);
