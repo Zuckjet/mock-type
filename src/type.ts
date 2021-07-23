@@ -11,5 +11,5 @@ export interface Options {
 }
 
 export type Output = {
-  [index: string]: {};
+  [index: string]: any
 };

@@ -21,6 +21,8 @@ const supportedPrimitiveTypes: { [key: string]: boolean } = {
   [ts.SyntaxKind.AnyKeyword]: true,
 };
 
+let basicReferenceValue: number | string | boolean = '';
+
 export function processFile(
   sourceFile: ts.SourceFile,
   options: Options,
@@ -30,9 +32,32 @@ export function processFile(
   const processNode = (node: ts.Node) => {
     switch (node.kind) {
       case ts.SyntaxKind.InterfaceDeclaration:
+      case ts.SyntaxKind.TypeAliasDeclaration:
         const p = (node as ts.InterfaceDeclaration).name.text;
         if (!isSpecificInterface(p, options) && !traverseProperty) {
           return;
+        }
+
+        if (node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
+          node = (node as ts.TypeAliasDeclaration).type;
+          if (p !== traverseProperty) {
+            return;
+          }
+          if (node.kind === ts.SyntaxKind.NumberKeyword) {
+            basicReferenceValue = parseInt(
+              faker.fake('{{datatype.number}}'),
+              10
+            );
+            return;
+          } else if (node.kind === ts.SyntaxKind.StringKeyword) {
+            basicReferenceValue = faker.fake('{{lorem.text}}').substring(0, 50);
+            return;
+          } else if (node.kind === ts.SyntaxKind.BooleanKeyword) {
+            basicReferenceValue = JSON.parse(
+              faker.fake('{{datatype.boolean}}')
+            );
+            return;
+          }
         }
         if (traverseProperty) {
           if (p === traverseProperty) {
@@ -57,9 +82,9 @@ export function processFile(
         processImportDeclaration(node as ts.ImportDeclaration, output);
         break;
 
-      case ts.SyntaxKind.TypeAliasDeclaration:
-        const type = (node as ts.TypeAliasDeclaration).type;
-        traverseInterface(type, sourceFile, options, output);
+      // case ts.SyntaxKind.TypeAliasDeclaration:
+      //   const type = (node as ts.TypeAliasDeclaration).type;
+      //   traverseInterface(type, sourceFile, options, output);
 
       default:
         break;
@@ -69,6 +94,8 @@ export function processFile(
   };
 
   processNode(sourceFile);
+
+  return output;
 }
 
 function traverseInterface(
@@ -278,9 +305,13 @@ function processPropertyTypeReference(
       output[property],
       typeName
     );
+  } else {
+    processFile(sourceFile, options, output[property], typeName);
+    if (basicReferenceValue) {
+      output[property] = basicReferenceValue;
+      basicReferenceValue = '';
+    }
   }
-
-  processFile(sourceFile, options, output[property], typeName);
 }
 
 function processArrayPropertyType(
@@ -329,14 +360,31 @@ function resolveArrayType(
     kind === ts.SyntaxKind.BooleanKeyword ||
     kind === ts.SyntaxKind.NumberKeyword;
 
-  const round = Math.round(Math.random() * 10);
+  const round = Math.floor(Math.random() * 10) + 1; // 1 ~ 10
 
   for (let index = 0; index < round; index++) {
     if (isPrimitiveType) {
       result.push(generatePrimitive(property, kind));
     } else {
       const temp = {};
-      processFile(sourceFile, options, temp, typeName);
+
+      if (importedInterfaces.get(typeName)) {
+        const options: Options = {
+          file: importedInterfaces.get(typeName),
+          interfaces: typeName.split(' '),
+        };
+
+        processFile(
+          allReferencedFiles.get(importedInterfaces.get(typeName)),
+          options,
+          temp,
+          typeName
+        );
+      } else {
+        processFile(sourceFile, options, temp, typeName);
+      }
+
+      // processFile(sourceFile, options, temp, typeName);
       result.push(temp);
     }
   }

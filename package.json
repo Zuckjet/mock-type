@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npm run build:live",
     "build": "tsc -p .",
+    "test": "./node_modules/mocha/bin/mocha --reporter mocha-multi-reporters --reporter-options configFile=mocha-config.json --no-colors -r ts-node/register test/*.spec.ts",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec \"ts-node\" src/index.ts"
   },
   "keywords": [
@@ -15,10 +16,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.2.21",
     "@types/command-line-args": "^5.0.0",
     "@types/command-line-usage": "^5.0.2",
     "@types/faker": "^5.5.6",
+    "@types/mocha": "^8.2.3",
     "@types/node": "^15.12.2",
+    "chai": "^4.3.4",
+    "mocha": "^9.0.2",
+    "mocha-multi-reporters": "^1.5.1",
+    "mocha-notifier-reporter": "^0.1.2",
     "nodemon": "^2.0.7",
     "ts-node": "^10.0.0"
   },
