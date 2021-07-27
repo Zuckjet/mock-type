@@ -102,4 +102,18 @@ describe('mock-type', function() {
     expect(typeof(output.objectTypeAlias.average)).to.equal('number');
   });
 
+  it('should support object type alias:', function() {
+    expect(typeof(output.objectTypeAlias)).to.equal('object');
+    expect(typeof(output.objectTypeAlias.average)).to.equal('number');
+  });
+
+  it('should support enum:', function() {
+    expect(typeof(output.enum)).to.equal('number');
+  });
+
+  it('should support intersection type:', function() {
+    expect(typeof(output.intersectionType)).to.equal('object');
+    expect(typeof(output.intersectionType.age)).to.equal('number');
+    expect(typeof(output.intersectionType.title)).to.equal('string');
+  });
 });

@@ -177,7 +177,7 @@ function traverseInterfaceMembers(
   const processPropertySignature = (
     node: ts.PropertySignature | ts.IndexSignatureDeclaration
   ) => {
-    let kind;
+    let kind: ts.SyntaxKind | string = '';
     let typeName = '';
     let property = '';
 
@@ -238,6 +238,20 @@ function traverseInterfaceMembers(
           kind,
           options
         );
+        break;
+      case ts.SyntaxKind.IntersectionType:
+        const types = typeName.split('&');
+        types.forEach(type => {
+          processPropertyTypeReference(
+            node as ts.PropertySignature,
+            property,
+            sourceFile,
+            output,
+            options,
+            type.trim(),
+            kind as ts.SyntaxKind
+          );
+        });
         break;
       default:
         processGenericPropertyType(
@@ -350,7 +364,7 @@ function processPropertyTypeReference(
     return;
   }
 
-  output[property] = {};
+  output[property] = output[property] ? output[property] : {};
 
   if (importedInterfaces.get(typeName)) {
     const options: Options = {

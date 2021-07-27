@@ -17,6 +17,8 @@ interface Admin {
   stringLiteral: 'a' | 'b';
   basicTypeAlias: StringAlias;
   objectTypeAlias: Grade;
+  enum: Direction;
+  intersectionType: User & Record;
 }
 
 export interface Record {
@@ -28,3 +30,10 @@ type Grade = {
 };
 
 type StringAlias = string;
+
+enum Direction {
+  Up = 1,
+  Down,
+  Left,
+  Right
+}
