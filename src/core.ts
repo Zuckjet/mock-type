@@ -82,10 +82,24 @@ export function processFile(
         processImportDeclaration(node as ts.ImportDeclaration, output);
         break;
 
-      // case ts.SyntaxKind.TypeAliasDeclaration:
-      //   const type = (node as ts.TypeAliasDeclaration).type;
-      //   traverseInterface(type, sourceFile, options, output);
-
+      case ts.SyntaxKind.EnumDeclaration:
+        const property = (node as ts.EnumDeclaration).name.text;
+        if (traverseProperty) {
+          if (
+            property === traverseProperty ||
+            (traverseProperty.split('.').length > 1 &&
+              traverseProperty.split('.')[0] === property)
+          ) {
+            processEnum(
+              node as ts.EnumDeclaration,
+              sourceFile,
+              options,
+              output,
+              traverseProperty
+            );
+          }
+        }
+        break;
       default:
         break;
     }
@@ -96,6 +110,50 @@ export function processFile(
   processNode(sourceFile);
 
   return output;
+}
+
+function processEnum(
+  node: ts.EnumDeclaration,
+  sourceFile: ts.SourceFile,
+  options: Options,
+  output: Output,
+  traverseProperty: string
+) {
+  if (traverseProperty.split('.').length > 1) {
+    const targetMember = node.members.find((element) => {
+      return element.name.getText() === traverseProperty.split('.')[1];
+    });
+    if (
+      targetMember?.initializer &&
+      targetMember.initializer.kind === ts.SyntaxKind.StringLiteral
+    ) {
+      basicReferenceValue = faker.fake('{{lorem.text}}').substring(0, 50);
+    } else {
+      basicReferenceValue = parseInt(faker.fake('{{datatype.number}}'), 10);
+    }
+  } else {
+    const values: Array<string | number> = [];
+    node.members.find((element) => {
+      if (
+        element.initializer &&
+        element.initializer.kind === ts.SyntaxKind.StringLiteral
+      ) {
+        values.push(faker.fake('{{lorem.text}}').substring(0, 50));
+        return true;
+      }
+    });
+    node.members.find((element) => {
+      if (
+        !element.initializer ||
+        (element.initializer &&
+          element.initializer.kind === ts.SyntaxKind.NumericLiteral)
+      ) {
+        values.push(parseInt(faker.fake('{{datatype.number}}'), 10));
+        return true;
+      }
+    });
+    basicReferenceValue = faker.random.arrayElement(values);
+  }
 }
 
 function traverseInterface(
@@ -136,6 +194,7 @@ function traverseInterfaceMembers(
     if (node.type) {
       kind = node.type.kind;
       typeName = node.type.getText();
+      // if (typeName === 'Type.first') typeName = 'Type';
     }
 
     switch (kind) {
