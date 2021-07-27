@@ -40,8 +40,12 @@ export function processFile(
 
         if (node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
           node = (node as ts.TypeAliasDeclaration).type;
-          if (p !== traverseProperty) {
-            return;
+          if (traverseProperty) {
+            if (p !== traverseProperty) {
+              return;
+            }
+          } else {
+            traverseInterface(node, sourceFile, options, output);
           }
           if (node.kind === ts.SyntaxKind.NumberKeyword) {
             basicReferenceValue = parseInt(
